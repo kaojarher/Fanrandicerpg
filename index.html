@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>凡人修仙擲骰錄・遊戲版</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4ecd8;--card:#fbf6e6;--ink:#2b2a26;--jade:#2f7d6b;--red:#b3362f;--line:#cbbf9f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a16;--card:#282520;--ink:#eee6d0;--jade:#6cc2ab;--red:#e86a5e;--line:#4a4438}}
+:root[data-theme="dark"]{--bg:#1c1a16;--card:#282520;--ink:#eee6d0;--jade:#6cc2ab;--red:#e86a5e;--line:#4a4438}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Serif TC","PingFang TC","Microsoft JhengHei",serif;font-size:18px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer}
+.app{max-width:960px;margin:0 auto;padding:8px 10px 24px}
+header{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between}
+h1{margin:0;font-size:24px;color:var(--jade);letter-spacing:.15em}
+.bar{display:flex;gap:5px;flex-wrap:wrap}
+.btn{border:1.5px solid var(--ink);background:var(--card);padding:5px 10px;border-radius:10px;font-size:17px;min-height:40px}
+.btn:active{transform:translateY(1px)}
+.btn.p{background:var(--jade);color:#fff;border-color:var(--jade)}
+.btn.r{background:var(--red);color:#fff;border-color:var(--red)}
+.btn:disabled{opacity:.4;cursor:default}
+.stats{display:flex;flex-wrap:wrap;gap:6px 12px;margin:8px 0;padding:6px 8px;background:var(--card);border:1.5px solid var(--ink);border-radius:10px;font-weight:700}
+.hearts{display:flex;flex-wrap:wrap;gap:2px;width:100%;font-size:22px;line-height:1.25;margin-top:4px}
+.hearts i{font-style:normal;opacity:.22;filter:grayscale(1)}.hearts i.on{opacity:1;filter:none}
+.main{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:820px){.main{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}}
+.map{display:grid;grid-template-columns:repeat(15,1fr);border:2px solid var(--ink);background:var(--card);border-radius:8px;overflow:hidden}
+.c{aspect-ratio:1;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:transparent;padding:0;font-size:clamp(15px,3.7vw,32px);display:grid;place-items:center;position:relative;line-height:1}
+.c.z{background:rgba(179,54,47,.16)}
+.c.a{outline:2px solid var(--jade);outline-offset:-2px;background:rgba(47,125,107,.2)}
+.c.tp{outline:2px dashed var(--red);outline-offset:-2px}
+.c.p{background:rgba(216,170,40,.35)}
+.c.e::after{content:"+";opacity:.5;font-size:.9em}
+.hp2{margin-top:6px;padding:6px 8px;background:var(--card);border:1.5px solid var(--ink);border-radius:10px;font-weight:700;font-size:20px}
+.zl{font-size:16px;color:var(--red);font-weight:900;letter-spacing:.2em;margin:2px 0}
+.card{background:var(--card);border:1.5px solid var(--ink);border-radius:10px;padding:8px;margin-bottom:8px}
+.card h2{margin:0 0 6px;font-size:19px;color:var(--red);letter-spacing:.2em}
+.dice{font-size:20px;font-weight:700}
+.big{font-size:64px;line-height:1;text-align:center}
+.hpbar{height:14px;background:var(--line);border-radius:5px;overflow:hidden;margin:4px 0}
+.hpbar div{height:100%;background:var(--red)}
+.row{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.slot{flex:1 1 130px;min-height:60px;border:1.5px dashed var(--ink);border-radius:8px;padding:5px;text-align:center;font-size:15px;line-height:1.3;background:var(--bg)}
+.slot.f{border-style:solid;border-color:var(--jade)}
+.item{display:flex;align-items:center;gap:4px;padding:6px 10px;font-size:16px}
+.log{font-size:16px;line-height:1.6;max-height:260px;overflow:auto}
+.log div{border-bottom:1px dotted var(--line)}
+.hint{font-size:16px;opacity:.8}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;place-items:center;z-index:9;padding:12px}
+.modal.on{display:grid}
+.mbox{background:var(--card);border:2px solid var(--ink);border-radius:12px;max-width:560px;width:100%;max-height:90%;overflow:auto;padding:12px}
+textarea{width:100%;height:170px;font:14px monospace;background:var(--bg);color:var(--ink);border:1.5px solid var(--ink);border-radius:8px;padding:6px}
+.win{color:var(--jade);font-size:24px;font-weight:900;text-align:center}
+.lose{color:var(--red);font-size:24px;font-weight:900;text-align:center}
+.shake{animation:sh .35s}@keyframes sh{25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header><h1>🗡️ 凡人修仙擲骰錄</h1>
+  <div class="bar"><button class="btn" data-a="zm" aria-label="縮小">🔍−</button><button class="btn" data-a="zp" aria-label="放大">🔍＋</button><button class="btn" data-a="new">🔄 新遊戲</button><button class="btn p" data-a="export">📤 匯出</button><button class="btn p" data-a="import">📥 匯入</button><button class="btn" data-a="rules">📖 規則</button></div></header>
+ <div class="stats" id="stats"></div>
+ <div class="main">
+  <div><div class="zl" id="zl"></div><div class="map" id="map"></div><div class="hp2" id="hearts"></div><div class="hint" id="lg" style="margin-top:4px"></div></div>
+  <div id="panel"></div>
+ </div>
+</div>
+<div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
+<input type="file" id="file" accept=".json,application/json" hidden>
+<script>
+const G='fanren-dice-dungeon',W=15,H=10,SX=7,SY=4,BX=7,BY=0;
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),d=n=>rnd(1,n);
+const ST=[
+{n:'七玄門',zn:'後山險地',rl:'凡人武者',b:{n:'墨大夫',em:'🧙‍♂️',hp:10,ma:1,AC:12,MA:3},en:[['野狼','🐺'],['山賊','🥷'],['江湖惡徒','🦹'],['毒蛇','🐍'],['黑衣刺客','🕴️']]},
+{n:'黃楓谷',zn:'谷外妖獸山',rl:'煉氣期',b:{n:'嗜血邪修',em:'🧛',hp:14,ma:2,AC:14,MA:4},en:[['瘋狂妖鼠','🐀'],['遊蕩散修','🥷'],['陰森屍傀','🧟'],['猙獰鬼靈','👻'],['黑暗魔修','😈']]},
+{n:'血色禁地',zn:'禁地深處',rl:'築基期',b:{n:'禁地守關者',em:'🩸',hp:18,ma:2,AC:16,MA:5},en:[['血蝠','🦇'],['血蛛','🕷️'],['嗜血妖狼','🐺'],['血傀儡','🧟'],['血煞魔修','😈']]},
+{n:'亂星海',zn:'星宮外海',rl:'結丹期',b:{n:'金丹妖修',em:'🐉',hp:24,ma:3,AC:18,MA:6},en:[['巨鯊妖','🦈'],['墨魚妖','🦑'],['海蛇妖','🐍'],['水蛟','🐊'],['深海魔修','🧜']]},
+{n:'虛天殿',zn:'殿中禁制區',rl:'元嬰期',b:{n:'元嬰老怪',em:'👹',hp:30,ma:3,AC:20,MA:7},en:[['殿中傀儡','🗿'],['守殿靈獸','🦁'],['幽冥鬼修','💀'],['陣法煞靈','🌀'],['化形妖修','👺']]}];
+const BASE=[[1,1,2,1],[4,1,6,2],[6,1,10,2],[7,1,12,3],[9,2,14,3]],TIER=[0,0,1,2,3,3];
+function en(i,st){if(i==5){const b=ST[st].b;return{n:b.n,em:b.em,hp:b.hp,ma:b.ma,AC:b.AC,MA:b.MA}}
+ const[h,a,c,m]=BASE[i],e=ST[st].en[i];return{n:e[0],em:e[1],hp:Math.round(h*(1+.3*st)),ma:a+(st>>1),AC:c+st,MA:m+((st+1)>>1)}}
+const I={ctrl:['📜','傀儡符','戰鬥中：敵人逃跑（對關主無效）','c'],fire:['🔥','火球符','戰鬥中：本回合與下回合各 2 傷害','c'],rtp:['🌀','隨機傳送符','傳送到隨機房間','c'],ttp:['🧭','定向傳送符','傳送到任意房間','c'],
+ sh4:['🐉','龍鱗護盾','護甲 +4（可疊加）','e'],sh2:['🛡️','玄鐵盾','護甲 +2（可疊加）','e'],sh1:['🪵','破舊木盾','護甲 +1（可疊加）','e'],fj:['🗡️','飛劍','戰鬥先手傷害 = 數量','e'],qz:['⚔️','青竹蜂雲劍','每把多攻擊一次（最多 +2）','e'],hm:['🔨','巨力金錘','攻擊 +1（可疊加）','e'],
+ bar:['🏷️','議價符','商店：下一件商品折 10 靈石','c'],fr:['🤝','結緣符','召喚南宮婉 3 個房間','c'],und:['✨','保命符','（被動）致死時復活為 10 生命','c'],swf:['🍃','風行符','（被動）自動閃避一次攻擊','c']};
+const T=[['ctrl','fire','rtp','ttp','H1','H2','H4','H5','S1_1','D1_1'],['G10','G10','G25','G15','H2','H2','H4','H6','S1_2','D2_1'],['G30','G50','G70','G250','H3','H3','H5','H6','S2_3','D3_2'],['sh4','sh2','sh1','fj','qz','hm','bar','fr','und','swf']];
+const SHOP={H2:20,H5:45,fire:30,swf:35,und:80,fr:60,sh2:70,hm:90};
+function info(k){if(I[k])return I[k];let m;
+ if(m=/^H(\d+)$/.exec(k))return[+m[1]<=3?'🧪':'⚗️',(+m[1]<=3?'小':'大')+'回春丹','回復 '+m[1]+' 生命','c'];
+ if(m=/^S(\d)_(\d)$/.exec(k))return['💪',(m[1]>1?'大':'小')+'力量丹','攻擊 +'+m[1]+'（'+m[2]+' 房間）','c'];
+ if(m=/^D(\d)_(\d)$/.exec(k))return['🔰',(m[1]>2?'大':'小')+'護體丹','護甲 +'+m[1]+'（'+m[2]+' 房間）','c'];
+ if(m=/^G(\d+)$/.exec(k))return['💎',m[1]+' 靈石','','g'];return null}
+const fresh=()=>({st:0,hp:19,gold:0,x:SX,y:SY,vis:{[SX+','+SY]:'S'},bag:{},eq:{},rooms:0,bottle:3,bt:false,ally:0,n20:0,buff:{},fight:null,shop:null,tp:false,clear:false,over:null,roll:null,log:['📖 第 1 關【七玄門】：你踏上修仙之路……']});
+let S=fresh(),DL=null;
+const $=s=>document.getElementById(s);
+try{const t=localStorage.getItem('fdd');if(t)load(t,true)}catch(e){}
+try{window.claude&&claude.use('downloads').then(x=>DL=x).catch(()=>{})}catch(e){}
+const log=m=>{S.log.unshift(m);S.log.length=Math.min(S.log.length,30)};
+const add=(o,k,n)=>{o[k]=(o[k]||0)+n;if(o[k]<=0)delete o[k]};
+const mh=()=>19+3*S.st,c=k=>S.eq[k]||0;
+const ac=()=>10+c('sh4')*4+c('sh2')*2+c('sh1')+(S.buff.def?S.buff.def.v:0)+(S.ally>0?2:0);
+const ab=()=>c('hm')+(S.buff.str?S.buff.str.v:0)+S.st;
+const zone=()=>S.y<3;
+function tick(){for(const b of['str','def'])if(S.buff[b]){if(--S.buff[b].r<=0)delete S.buff[b]}if(S.ally>0)S.ally--}
+function goto(x,y){S.x=x;S.y=y;const k=x+','+y;if(S.vis[k]){log('此處已探索。');return}
+ S.rooms++;tick();
+ if(x==BX&&y==BY){S.vis[k]='B';log('🏯 '+ST[S.st].zn+'核心！關主 '+ST[S.st].b.n+' 現身！');startFight(5,false,k);return}
+ const nat=d(20),r=Math.min(20,nat+(zone()?3:0));S.roll={nat,r,z:zone()};
+ S.n20=nat==20?S.n20+1:0;
+ if(S.n20>=2){S.n20=0;S.ally=3;log('🧝‍♀️ 南宮婉現身相助！3 個房間內每回合協助攻擊且護甲 +2。')}
+ if(r==1){S.vis[k]='N';log('🍃 空無一物。')}
+ else if(r<=11)startFight(null,false,k);
+ else if(r<=17)startFight(null,true,k);
+ else if(r<=19){S.vis[k]='T';log('💰 發現寶物！');loot(rnd(0,3))}
+ else{S.vis[k]='M';S.shop={disc:0};log('🏪 遇到坊市商人。')}}
+function startFight(idx,tre,k){if(idx==null){const e=Math.min(20,d(20)+(zone()?2:0));idx=e<=5?0:e<=10?1:e<=14?2:e<=17?3:4}
+ const m=en(idx,S.st);S.fight={e:idx,hp:m.hp,burn:0,tre,k};log(m.em+' 遭遇 '+m.n+'！');
+ if(c('fj')){S.fight.hp-=c('fj');log('🗡️ 飛劍先手造成 '+c('fj')+' 傷害。')}}
+function loot(row){grant(T[row][d(10)-1])}
+function grant(k){const f=info(k);
+ if(f[3]=='g'){const a=+k.slice(1)*(zone()?2:1);S.gold+=a;log('💎 獲得 '+a+' 靈石'+(zone()?'（禁地加倍）':'')+'。')}
+ else{add(f[3]=='e'?S.eq:S.bag,k,1);log(f[0]+' 獲得 '+f[1]+(f[3]=='e'?'（已裝備，共 '+c(k)+'）':'（共 '+S.bag[k]+'）')+'。')}}
+function hurt(n){S.hp-=n;if(S.hp<=0){if(S.bag.und){add(S.bag,'und',-1);S.hp=10;log('✨ 保命符發動，復活為 10 生命！')}else{S.hp=0;S.over='lose';S.fight=null;log('☠️ 你道消身殞……')}}}
+function win(){const f=S.fight,m=en(f.e,S.st);S.fight=null;
+ if(f.e==5){if(S.st==4){S.over='win';log('🎉 擊敗元嬰老怪，修仙有成！');return}
+  S.clear=true;log('🎉 擊敗關主 '+m.n+'，通關【'+ST[S.st].n+'】！');loot(3);loot(3);return}
+ if(f.k)S.vis[f.k]='K';log('💀 擊敗 '+m.n+'！');loot(TIER[f.e]);if(f.tre)loot(rnd(0,3))}
+function next(){S.st++;const s=S.st;Object.assign(S,{x:SX,y:SY,vis:{[SX+','+SY]:'S'},hp:mh(),bottle:3,ally:0,n20:0,buff:{},fight:null,shop:null,tp:false,clear:false,roll:null,rooms:0});
+ log('▶ 第 '+(s+1)+' 關【'+ST[s].n+'】：境界提升為'+ST[s].rl+'，生命上限 '+mh()+'，已回滿。')}
+function attack(){const f=S.fight,m=en(f.e,S.st),ne=1+Math.min(c('qz'),2);
+ for(let n=0;n<ne&&f.hp>0;n++){const r=d(20);
+  if(r==20||r+4+S.st>=m.AC){const x=rnd(1+ab(),4+ab());f.hp-=x;log('⚔️ 命中！造成 '+x+' 傷害（擲 '+r+'）。')}else log('⚔️ 揮空（擲 '+r+'，需 '+Math.max(2,m.AC-4-S.st)+'）。')}
+ if(f.hp>0&&S.ally>0){f.hp-=1;log('🧝‍♀️ 南宮婉出手，造成 1 傷害。')}
+ if(f.hp>0&&f.burn){f.hp-=2;f.burn=0;log('🔥 火焰灼燒 2 傷害。')}
+ if(f.hp<=0)return win();
+ if(S.bag.swf){add(S.bag,'swf',-1);log('🍃 風行符閃避了攻擊。');return}
+ const r=d(20);if(r>=ac()){const x=rnd(m.ma,m.MA);log(m.em+' 反擊，你受到 '+x+' 傷害（擲 '+r+'）。');hurt(x)}else log(m.em+' 攻擊落空（擲 '+r+'，需 '+ac()+'）。')}
+function use(k){const f=info(k);if(!S.bag[k]||S.over||S.clear)return;let m;const bt=S.bt&&S.bottle>0&&/^[HSD]/.test(k);
+ const bump=()=>{if(bt){S.bottle--;log('🍶 掌天瓶催化，效果 +2！')}return bt?2:0};
+ if(m=/^H(\d+)$/.exec(k)){const v=+m[1]+bump();S.hp=Math.min(mh(),S.hp+v);log(f[0]+' 回復 '+v+' 生命。')}
+ else if(m=/^S(\d)_(\d)$/.exec(k)){S.buff.str={v:+m[1],r:+m[2]+bump()};log(f[0]+' 力量增強。')}
+ else if(m=/^D(\d)_(\d)$/.exec(k)){S.buff.def={v:+m[1],r:+m[2]+bump()};log(f[0]+' 護體生效。')}
+ else if(k=='ctrl'){if(!S.fight)return;if(S.fight.e==5){log('📜 關主修為高深，傀儡符對其無效！');return}const q=S.fight.k;if(q)S.vis[q]='K';S.fight=null;log('📜 傀儡符發動，敵人逃走。')}
+ else if(k=='fire'){if(!S.fight)return;S.fight.hp-=2;S.fight.burn=1;log('🔥 火球符造成 2 傷害，下回合再灼燒 2。');add(S.bag,k,-1);if(S.fight.hp<=0)win();return}
+ else if(k=='rtp'){if(S.fight||S.shop)return;add(S.bag,k,-1);let x,y;do{x=rnd(0,W-1);y=rnd(0,H-1)}while(x==S.x&&y==S.y);log('🌀 傳送至 ('+(x+1)+','+(y+1)+')。');return goto(x,y)}
+ else if(k=='ttp'){if(S.fight||S.shop)return;add(S.bag,k,-1);S.tp=true;log('🧭 請點選要傳送的房間。');return}
+ else if(k=='bar'){if(!S.shop)return;S.shop.disc+=10;log('🏷️ 下次購買折 10 靈石。')}
+ else if(k=='fr'){S.ally=3;log('🤝 南宮婉受邀相助 3 個房間。')}
+ else return;
+ add(S.bag,k,-1)}
+function buy(k){const p=SHOP[k],s=S.shop,cost=Math.max(1,p-s.disc);if(S.gold<cost)return log('靈石不足。');S.gold-=cost;s.disc=0;grant(k)}
+function cell(x,y){if(S.over||S.clear)return;if(S.fight||S.shop)return log('請先處理眼前的事件。');
+ if(S.tp){S.tp=false;return goto(x,y)}
+ if(Math.abs(x-S.x)+Math.abs(y-S.y)!=1)return log('只能移動到相鄰的房間。');goto(x,y)}
+const ch=(o,cl)=>Object.keys(o).map(k=>cl(k,o[k])).join('');
+function render(){
+ const g=(a,b)=>a.map(b).join(''),s=ST[S.st];
+ $('stats').innerHTML='<span style="width:100%">📍 第 '+(S.st+1)+'/5 關【'+s.n+'】　🎓 '+s.rl+'</span><span>💎 '+S.gold+'</span><span>🛡️ 需擲 '+ac()+'</span><span>⚔️ '+(1+ab())+'–'+(4+ab())+'</span><span>🍶 '+S.bottle+'</span><span>🧝‍♀️ '+S.ally+'</span><span>🚪 '+S.rooms+'</span>';
+ $('hearts').innerHTML='❤️ 生命 '+S.hp+' / '+mh()+'<div class="hpbar"><div style="width:'+Math.min(100,S.hp/mh()*100)+'%"></div></div><div class="hearts">'+g([...Array(mh()).keys()],i=>'<i class="'+(i<S.hp?'on':'')+'">❤️</i>')+'</div>';
+ $('zl').textContent='▲ '+s.zn+'（紅色區域：遭遇 +3、敵人 +2、靈石加倍）';
+ $('lg').textContent='⛩️ 起點　🧙 韓立　🍃 空房　💀 已擊敗　💰 寶物　🏪 坊市　'+s.b.em+' 關主 '+s.b.n;
+ let h='';for(let y=0;y<H;y++)for(let x=0;x<W;x++){const k=x+','+y,v=S.vis[k],p=x==S.x&&y==S.y,adj=!S.fight&&!S.shop&&!S.over&&!S.clear&&Math.abs(x-S.x)+Math.abs(y-S.y)==1;
+  const ic=p?'🧙':v=='S'?'⛩️':v=='N'?'🍃':v=='K'?'💀':v=='T'?'💰':v=='M'?'🏪':v=='B'?'🏯':(x==BX&&y==BY?s.b.em:'');
+  h+='<button class="c '+(y<3?'z ':'')+(p?'p ':'')+(S.tp&&!p?'tp ':adj?'a ':'')+(ic?'':'e')+'" data-a="cell" data-x="'+x+'" data-y="'+y+'">'+ic+'</button>'}
+ $('map').innerHTML=h;
+ let p='';
+ if(S.roll)p+='<div class="card dice"><span id="die">🎲</span> 遭遇 d20：'+S.roll.nat+(S.roll.z?' +3 = '+S.roll.r+'（險地）':'')+'</div>';
+ if(S.over)p+='<div class="card"><div class="'+S.over+'">'+(S.over=='win'?'🎉 五關全破，修仙有成！':'☠️ 道消身殞，遊戲結束')+'</div><div class="row" style="justify-content:center;margin-top:8px"><button class="btn p" data-a="new">再來一局</button></div></div>';
+ else if(S.clear){const n=ST[S.st+1];p+='<div class="card"><div class="win">🎉 通關【'+s.n+'】！</div><div class="hint" style="text-align:center">下一關：【'+n.n+'】・境界 '+n.rl+'・生命上限 '+(19+3*(S.st+1))+'</div><div class="row" style="justify-content:center;margin-top:8px"><button class="btn p" data-a="next">▶ 前往下一關</button></div></div>'}
+ else if(S.fight){const f=S.fight,m=en(f.e,S.st);p+='<div class="card"><h2>'+(f.e==5?'關主戰':'戰　鬥')+'</h2><div class="big">'+m.em+'</div><b>'+m.n+'</b>　HP '+Math.max(0,f.hp)+'/'+m.hp+'<div class="hpbar"><div style="width:'+Math.min(100,Math.max(0,f.hp)/m.hp*100)+'%"></div></div><div class="hint">需擲 '+Math.max(2,m.AC-4-S.st)+'+ 命中　傷害 '+m.ma+'–'+m.MA+(f.tre?'　💰擊敗後額外寶物':'')+'</div><div class="row" style="margin-top:6px"><button class="btn r" data-a="atk">⚔️ 攻擊</button></div></div>'}
+ else if(S.shop){p+='<div class="card"><h2>坊市商人 🏪</h2><div class="hint">'+(S.shop.disc?'🏷️ 折扣 '+S.shop.disc+' 靈石':'可先使用議價符')+'</div><div class="row" style="margin-top:5px">'+g(Object.keys(SHOP),k=>{const f=info(k),q=Math.max(1,SHOP[k]-S.shop.disc);return'<button class="btn item" data-a="buy" data-k="'+k+'" '+(S.gold<q?'disabled':'')+'>'+f[0]+f[1]+' 💎'+q+'</button>'})+'</div><div class="row" style="margin-top:6px"><button class="btn p" data-a="leave">離開</button></div></div>'}
+ else p+='<div class="card"><h2>探　索</h2>'+(S.tp?'🧭 點選地圖任一格傳送　<button class="btn" data-a="tpc">取消</button>':'點選<b>相鄰的綠框房間</b>前進，抵達第 1 排中央的 '+s.b.em+' 挑戰關主。')+'</div>';
+ p+='<div class="card"><h2>裝　備（無上限）</h2><div class="row">'+(Object.keys(S.eq).length?ch(S.eq,(k,n)=>'<div class="slot f" title="'+info(k)[2]+'">'+info(k)[0]+' <b>'+info(k)[1]+(n>1?' ×'+n:'')+'</b><br>'+info(k)[2]+'</div>'):'<span class="hint">尚無裝備</span>')+'</div>';
+ p+='<div class="hint" style="margin-top:4px">🍶 掌天瓶 <label><input type="checkbox" data-a="bt" '+(S.bt?'checked':'')+'> 使用丹藥時催化（剩 '+S.bottle+' 次，+2）</label></div></div>';
+ p+='<div class="card"><h2>行　囊</h2><div class="row">'+(Object.keys(S.bag).length?ch(S.bag,(k,n)=>'<button class="btn item" data-a="use" data-k="'+k+'" title="'+info(k)[2]+'">'+info(k)[0]+info(k)[1]+(n>1?' ×'+n:'')+'</button>'):'<span class="hint">空空如也</span>')+'</div></div>';
+ p+='<div class="card"><h2>紀　錄</h2><div class="log">'+g(S.log.slice(0,10),m=>'<div>'+m+'</div>')+'</div></div>';
+ $('panel').innerHTML=p;
+ try{localStorage.setItem('fdd',JSON.stringify({game:G,state:S}))}catch(e){}}
+function payload(){return JSON.stringify({game:G,version:2,exportedAt:new Date().toISOString(),state:S},null,1)}
+function load(txt,quiet){const o=JSON.parse(txt);if(o.game!==G||!o.state||typeof o.state!='object')throw new Error('不是有效的遊戲存檔');
+ const s=o.state,f=fresh(),n=(v,a,b,dv)=>Number.isFinite(+v)?Math.min(b,Math.max(a,Math.round(+v))):dv,ok=(k,t)=>typeof k=='string'&&info(k)&&info(k)[3]==t;
+ const cn=(src,t)=>{const r={};if(Array.isArray(src))src.forEach(k=>{if(ok(k,t))r[k]=Math.min(99,(r[k]||0)+1)});else if(src&&typeof src=='object')for(const k in src)if(ok(k,t)){const q=n(src[k],0,99,0);if(q)r[k]=q}return r};
+ f.st=n(s.st,0,4,0);const M=19+3*f.st;
+ f.hp=n(s.hp,0,M,M);f.gold=n(s.gold,0,99999,0);f.x=n(s.x,0,W-1,SX);f.y=n(s.y,0,H-1,SY);f.rooms=n(s.rooms,0,9999,0);f.bottle=n(s.bottle,0,3,3);f.ally=n(s.ally,0,9,0);f.n20=n(s.n20,0,1,0);f.bt=!!s.bt;f.clear=!!s.clear&&f.st<4;
+ f.bag=cn(s.bag,'c');f.eq=cn(s.eq,'e');
+ if(Array.isArray(s.pend))s.pend.forEach(k=>{if(ok(k,'e'))f.eq[k]=(f.eq[k]||0)+1});
+ f.vis={};for(const k in s.vis||{}){const m=/^(\d+),(\d+)$/.exec(k);if(m&&+m[1]<W&&+m[2]<H&&typeof s.vis[k]=='string'&&s.vis[k].length==1&&'SNKTMB'.includes(s.vis[k]))f.vis[k]=s.vis[k]}
+ f.vis[SX+','+SY]='S';
+ for(const b of['str','def'])if(s.buff&&s.buff[b])f.buff[b]={v:n(s.buff[b].v,1,9,1),r:n(s.buff[b].r,1,20,1)};
+ if(s.fight&&typeof s.fight=='object'&&!f.clear){const e=n(s.fight.e,0,5,0);f.fight={e,hp:n(s.fight.hp,1,99,en(e,f.st).hp),burn:n(s.fight.burn,0,1,0),tre:!!s.fight.tre,k:/^\d+,\d+$/.test(s.fight.k)?s.fight.k:null}}
+ if(s.shop&&typeof s.shop=='object'&&!f.fight&&!f.clear)f.shop={disc:n(s.shop.disc,0,99,0)};
+ f.over=s.over=='win'||s.over=='lose'?s.over:null;if(f.over){f.fight=null;f.shop=null;f.clear=false}
+ if(s.roll&&typeof s.roll=='object')f.roll={nat:n(s.roll.nat,1,20,1),r:n(s.roll.r,1,20,1),z:!!s.roll.z};
+ f.log=(Array.isArray(s.log)?s.log:[]).map(String).slice(0,30);if(!f.log.length)f.log=['📖 已載入存檔。'];
+ S=f;if(!quiet)log('📥 存檔載入成功。')}
+function modal(html){$('mbox').innerHTML=html;$('modal').classList.add('on')}
+const close=()=>$('modal').classList.remove('on');
+let Z=1;try{Z=+localStorage.getItem('fddz')||1}catch(e){}
+const applyZ=()=>{document.querySelector('.app').style.zoom=Z;try{localStorage.setItem('fddz',Z)}catch(e){}};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;
+ if(a=='zp'||a=='zm'){Z=Math.min(1.6,Math.max(.8,+(Z+(a=='zp'?.1:-.1)).toFixed(1)));return applyZ()}
+ if(a=='bt'){S.bt=t.checked;return render()}
+ if(a=='cell')cell(+t.dataset.x,+t.dataset.y);
+ else if(a=='atk'){attack();const x=$('die');if(x)x.classList.add('shake')}
+ else if(a=='use')use(t.dataset.k);
+ else if(a=='buy')buy(t.dataset.k);
+ else if(a=='leave'){S.shop=null;log('你離開了坊市。')}
+ else if(a=='next')next();
+ else if(a=='tpc'){S.tp=false}
+ else if(a=='new'){if(!S.over&&!confirm('確定放棄目前進度，重新開始？'))return;S=fresh()}
+ else if(a=='close')return close();
+ else if(a=='rules')return modal('<h2 style="margin:0 0 6px;color:var(--red)">📖 規則</h2><div style="line-height:1.8;font-size:17px">1. 共 5 關：七玄門 → 黃楓谷 → 血色禁地 → 亂星海 → 虛天殿（關卡編排為遊戲改編）。每關擊敗最上排中央的關主即通關，通關後生命上限 +3、生命回滿，道具與裝備帶到下一關。<br>2. 從 ⛩️ 起點出發，只能走到相鄰房間；新房間擲 d20：1 空房、2–11 敵人、12–17 敵人＋寶物、18–19 寶物、20 坊市。<br>3. 紅色險地區遭遇擲骰 +3、敵人擲骰 +2、靈石加倍；關主不會隨機出現。<br>4. 戰鬥：你擲 d20＋4＋關卡數 ≥ 敵人護甲即命中，傷害 1–4（加成含關卡數）；敵人擲 d20 ≥ 你的護甲值（基礎 10）命中。<br>5. 裝備與道具無數量上限，重複取得會顯示 ×數量：護甲與攻擊類裝備疊加；飛劍先手傷害＝數量；青竹蜂雲劍每把多攻擊一次（最多 +2）。傀儡符對關主無效。<br>6. 🍶 掌天瓶每關 3 次，用丹藥時效果 +2。連續兩次自然 20，🧝‍♀️ 南宮婉現身相助。<br>7. 📤 匯出可下載或複製 JSON 存檔，📥 匯入可貼上或選擇檔案還原進度（相容舊版存檔）。</div><div class="row" style="margin-top:8px"><button class="btn p" data-a="close">關閉</button></div>');
+ else if(a=='export')return modal('<h2 style="margin:0 0 6px;color:var(--red)">📤 匯出存檔（JSON）</h2><textarea id="ta" readonly>'+payload().replace(/</g,'&lt;')+'</textarea><div class="row" style="margin-top:8px"><button class="btn p" data-a="dl">⬇️ 下載檔案</button><button class="btn" data-a="cp">📋 複製</button><button class="btn" data-a="close">關閉</button></div><div class="hint" id="msg" style="margin-top:4px"></div>');
+ else if(a=='import')return modal('<h2 style="margin:0 0 6px;color:var(--red)">📥 匯入存檔（JSON）</h2><textarea id="ta" placeholder="貼上 JSON，或選擇檔案"></textarea><div class="row" style="margin-top:8px"><button class="btn p" data-a="ld">載入貼上的內容</button><button class="btn" data-a="pick">📁 選擇檔案</button><button class="btn" data-a="close">取消</button></div><div class="hint" id="msg" style="margin-top:4px"></div>');
+ else if(a=='dl'){const m=$('msg');if(!DL){m.textContent='此環境無法直接下載，請改用「複製」。';return}DL.save({filename:'fanren-dice-save.json',data:payload()}).then(()=>m.textContent='✅ 已儲存').catch(x=>m.textContent=x&&x.code=='declined'?'已取消':'下載失敗，請改用「複製」。');return}
+ else if(a=='cp'){const ta=$('ta'),m=$('msg');ta.select();(navigator.clipboard?navigator.clipboard.writeText(payload()):Promise.reject()).then(()=>m.textContent='✅ 已複製').catch(()=>{try{document.execCommand('copy');m.textContent='✅ 已複製'}catch(x){m.textContent='請手動全選複製'}});return}
+ else if(a=='pick')return $('file').click();
+ else if(a=='ld'){try{load($('ta').value);close()}catch(x){$('msg').textContent='❌ '+(x.message||'JSON 格式錯誤');return}}
+ render()});
+$('file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{load(r.result);close();render()}catch(x){const m=$('msg');if(m)m.textContent='❌ '+(x.message||'JSON 格式錯誤')}};r.readAsText(f);e.target.value=''});
+$('modal').addEventListener('click',e=>{if(e.target.id=='modal')close()});
+applyZ();render();
+</script>
+</body>
+</html>
